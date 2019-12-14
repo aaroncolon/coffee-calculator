@@ -5,9 +5,26 @@ import jQuery from 'jquery';
   "use strict";
 
   var App = function() {
-    this.brewMethod   = '';
+    this.brewMethods = {
+      'french-press' : {
+        'brewTime' : '5:00',
+        'grind'    : 'Coarse',
+        'name'     : 'French Press',
+        'yield'    : 0.875
+      },
+      'pourover' : {
+        'brewTime' : '3:15',
+        'grind'    : 'Sand',
+        'name'     : 'Pourover',
+        'yield'    : 0.875
+      }
+    };
+    this.RATIO        = 16;
+    this.brewMethod   = null;
     this.coffeeAmount = 0;
     this.waterAmount  = 0;
+    this.yieldAmount  = 0;
+    this.brewTime     = 0;
   };
 
   App.prototype.init = function() {
@@ -16,71 +33,111 @@ import jQuery from 'jquery';
   };
 
   App.prototype.cacheDom = function() {
-    this.$el          = jQuery('.coffee-module');
-    this.$brewSelect  = this.$el.find('#brew-method');
-    this.$coffeeInput = this.$el.find('#coffee-amount');
-    this.$waterInput  = this.$el.find('#water-amount');
-    this.$submit      = this.$el.find('#submit');
+    this.$root        = jQuery('.coffee-module');
+    this.$form        = this.$root.find('#form-coffee');
+    this.$brewSelect  = this.$root.find('#brew-method');
+    this.$coffeeInput = this.$root.find('#coffee-amount');
+    this.$table       = this.$root.find('#results tbody');
   };
 
   App.prototype.bindEvents = function() {
-    var _self = this;
-
-    this.$brewSelect.on('change', this.setBrewMethod.bind(this));
-    this.$coffeeInput.on('input', this.setCoffee.bind(this));
-    this.$waterInput.on('input', this.setWater.bind(this));
-    this.$submit.on('click', function() {
-      _self.handleSubmit(_self.coffeeAmount, _self.waterAmount);
-    });
+    this.$form.on('submit', this.handleSubmit.bind(this));
   };
 
   App.prototype.render = function() {
-    if (this.coffeeAmount > 0) {
-      this.$waterInput.val(this.waterAmount);
+    this.resetTable();
+
+    var tdData = [
+      this.coffeeAmount,
+      this.waterAmount,
+      this.yieldAmount,
+      this.brewTime,
+      this.brewMethods[this.brewMethod].grind
+    ];
+    var tr = this.createTr(tdData);
+
+    this.$table.append(tr);
+  };
+
+  App.prototype.createTr = function(data) {
+    var tr = document.createElement('tr');
+    var tds = this.createTds(data);
+    for (var i = 0; i < tds.length; i++) {
+      tr.appendChild(tds[i]);
     }
-
-    if (this.waterAmount > 0) {
-      this.$coffeeInput.val(this.coffeeAmount);
-    }
+    return tr;
   };
 
-  App.prototype.setBrewMethod = function() {
-    this.brewMethod = this.$brewSelect.val();
+  App.prototype.createTds = function(data) {
+    return data.map(function(el, i) {
+      var td = document.createElement('td');
+      var t  = document.createTextNode(el);
+      td.appendChild(t)
+      return td;
+    });
   };
 
-  App.prototype.setCoffee = function() {
-    this.coffeeAmount = this.$coffeeInput.val();
-    this.resetWater();
+  App.prototype.resetTable = function() {
+    this.$table.empty();
   };
 
-  App.prototype.setWater = function() {
-    this.waterAmount = this.$waterInput.val();
-    this.resetCoffee();
+  App.prototype.setBrewMethod = function(brewMethod) {
+    this.brewMethod = brewMethod;
+  };
+
+  App.prototype.handleSubmit = function(e) {
+    e.preventDefault();
+
+    this.setBrewMethod(this.$brewSelect.val());
+    this.calculate(this.$coffeeInput.val());
+    this.render();
+  };
+
+  App.prototype.calculate = function(coffeeAmount) {
+    this.setCoffee(coffeeAmount);
+    this.setWater(this.calcWater(coffeeAmount));
+    this.setYield(this.calcYield(this.waterAmount, this.brewMethod));
+    this.setBrewTime(this.calcBrewTime(this.brewMethod));
+  };
+
+  App.prototype.setCoffee = function(coffeeAmount) {
+    this.coffeeAmount = coffeeAmount;
   };
 
   App.prototype.resetCoffee = function() {
     this.coffeeAmount = 0;
-    this.$coffeeInput.val('');
+  };
+
+  App.prototype.calcWater = function(coffeeAmount) {
+    return coffeeAmount * this.RATIO;
+  };
+
+  App.prototype.setWater = function(waterAmount) {
+    this.waterAmount = waterAmount;
   };
 
   App.prototype.resetWater = function() {
     this.waterAmount = 0;
-    this.$waterInput.val('');
   };
 
-  App.prototype.calculate = function(coffeeAmount, waterAmount) {
-    if (coffeeAmount > 0) {
-      this.waterAmount = coffeeAmount * 16;
-    }
-
-    if (waterAmount > 0) {
-      this.coffeeAmount = waterAmount / 16;
-    }
+  App.prototype.calcYield = function(waterAmount, brewMethod) {
+    return waterAmount * this.brewMethods[brewMethod].yield;
   };
 
-  App.prototype.handleSubmit = function(coffeeAmount, waterAmount) {
-    this.calculate(coffeeAmount, waterAmount);
-    this.render();
+  App.prototype.setYield = function(yieldAmount) {
+    this.yieldAmount = yieldAmount;
+  };
+
+  App.prototype.calcBrewTime = function(brewMethod) {
+    return this.brewMethods[brewMethod].brewTime;
+  };
+
+  App.prototype.setBrewTime = function(brewTime) {
+    this.brewTime = brewTime;
+  };
+
+  App.prototype.resetBrewTime = function() {
+    this.brewTime = 0;
   };
 
   var app = new App();

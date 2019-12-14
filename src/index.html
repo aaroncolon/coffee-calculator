@@ -16,25 +16,39 @@
       <p><em>Calculate Proper Coffee-to-Water Ratio</em></p>
 
       <div class="coffee-module">
-        <div class="form-group">
-          <label for="brew-method">Brew Method</label>
-          <select id="brew-method" class="form-control">
-            <option value="" disabled selected>Select a brew method...</option>
-            <option value="french-press">French Press</option>
-            <option value="pour-over">Pour Over</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="coffee-amount">Coffee Amount (grams)</label>
-          <input type="number" id="coffee-amount">
-        </div>
-        <div class="form-group">
-          <label for="water-amount">Water Amount (grams)</label>
-          <input type="number" id="water-amount">
-        </div>
-        <div class="form-group">
-          <button class="btn btn--submit" id="submit" type="button">Calculate</button>
-        </div>
+
+        <form id="form-coffee">
+          <div class="form-group">
+            <label for="brew-method">Brew Method</label>
+            <select id="brew-method" class="form-control" required>
+              <option value="" disabled selected>Select a brew method...</option>
+              <option value="french-press">French Press</option>
+              <option value="pourover">Pourover</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="coffee-amount">Coffee Amount (grams)</label>
+            <input type="number" id="coffee-amount" required>
+          </div>
+          <div class="form-group">
+            <button class="btn btn--submit" id="submit" type="submit">Calculate</button>
+          </div>
+        </form>
+
+        <table id="results">
+          <thead>
+            <tr>
+              <th>Coffee (g)</th>
+              <th>Water (g)</th>
+              <th>Yield (g)</th>
+              <th>Brew Time</th>
+              <th>Grind</th>
+            </tr>
+          </thead>
+          <tbody>
+
+          </tbody>
+        </table>
       </div>
     </div><!-- /.site-content -->
   </div><!-- /.site-wrap -->
